@@ -1,0 +1,207 @@
+name: "deep-tech"
+description: "深度技术风：深青色系，代码块突出，适合深度技术解析和源码解读文章"
+colors:
+  primary: "#0d7377"
+  secondary: "#14a085"
+  text: "#1a1a2e"
+  text_light: "#6b7280"
+  background: "#f5f7fa"
+  code_bg: "#1e2a3a"
+  code_color: "#7dd3fc"
+  quote_border: "#0d7377"
+  quote_bg: "#e8f5f4"
+  border_radius: "6px"
+darkmode:
+  background: "#0f172a"
+  text: "#e2e8f0"
+  text_light: "#94a3b8"
+  primary: "#22d3ee"
+  code_bg: "#0d1b2a"
+  code_color: "#7dd3fc"
+  quote_bg: "#0d2233"
+  quote_border: "#22d3ee"
+base_css: |
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.9;
+    color: #1a1a2e;
+    background: #f5f7fa;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px;
+    word-wrap: break-word;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0d1b2a;
+    margin: 36px 0 18px 0;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    background: #0d7377;
+    margin: 32px 0 14px 0;
+    padding: 8px 14px;
+    border-radius: 6px;
+    line-height: 1.4;
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #0d7377;
+    margin: 24px 0 10px 0;
+    padding-left: 12px;
+    border-left: 4px solid #0d7377;
+    line-height: 1.4;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  }
+
+  p {
+    font-size: 16px;
+    line-height: 1.9;
+    color: #1a1a2e;
+    margin: 14px 0;
+  }
+
+  strong {
+    font-weight: 700;
+    color: #0d7377;
+  }
+
+  em {
+    font-style: italic;
+    color: #6b7280;
+    background: #f0fafa;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 13.5px;
+    background: #1e2a3a;
+    color: #7dd3fc;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  pre {
+    background: #1e2a3a;
+    color: #e2e8f0;
+    padding: 18px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 18px 0;
+    line-height: 1.65;
+    border: none;
+    box-shadow: 0 2px 8px rgba(13, 27, 42, 0.15);
+  }
+
+  pre::before {
+    content: "◉ CODE";
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+  }
+
+  pre code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 13.5px;
+    background: none;
+    color: #e2e8f0;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  blockquote {
+    border-left: 4px solid #0d7377;
+    background: #e8f5f4;
+    margin: 18px 0;
+    padding: 12px 18px;
+    border-radius: 0 8px 8px 0;
+    color: #374151;
+    font-style: italic;
+  }
+
+  blockquote p {
+    margin: 6px 0;
+    color: #374151;
+  }
+
+  ul, ol {
+    padding-left: 24px;
+    margin: 14px 0;
+  }
+
+  li {
+    font-size: 16px;
+    line-height: 1.9;
+    color: #1a1a2e;
+    margin: 7px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14.5px;
+    background: #ffffff;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(13, 115, 119, 0.1);
+  }
+
+  th {
+    background: #0d7377;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5eef0;
+    color: #1a1a2e;
+  }
+
+  tr:nth-child(even) td {
+    background: #f0fafa;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 24px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  a {
+    color: #0d7377;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px dotted #0d7377;
+  }
+
+  hr {
+    border: none;
+    border-top: 2px dashed #b2d8d8;
+    margin: 32px 0;
+  }

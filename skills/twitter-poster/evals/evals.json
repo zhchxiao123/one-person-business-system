@@ -1,0 +1,39 @@
+{
+  "skill_name": "twitter-poster",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我发一条推特，内容是：'刚刚完成了我的新开源项目！欢迎大家 star 和 fork，链接在 profile 里 🚀'",
+      "expected_output": "Claude 应检查环境变量是否存在，然后调用 post_tweet.py 脚本发布推文，并返回推文 URL",
+      "files": [],
+      "assertions": [
+        "Runs post_tweet.py script with --text argument",
+        "Checks for TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET environment variables",
+        "Reports the tweet URL in format https://twitter.com/i/web/status/{id} or explains next steps clearly"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我想发一个推特 thread，三条连续推文：1. '今天聊聊 AI 的未来' 2. '大模型正在改变软件开发方式，从代码补全到架构设计' 3. '但最重要的还是人的创造力和判断力，AI 是工具不是替代品'",
+      "expected_output": "Claude 应依次发三条推文，每条回复上一条，最终展示三条推文的 URL",
+      "files": [],
+      "assertions": [
+        "Posts all three tweets in sequence",
+        "Second and third tweets use --reply-to flag with the previous tweet's ID",
+        "Reports URLs for all three tweets"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我想发推特但不知道怎么设置 API，能帮我说明一下吗？然后帮我发：'Hello Twitter! 第一条推文 🎉'",
+      "expected_output": "Claude 应先给出完整的 Twitter API 申请和配置说明，然后提供发推命令，并在确认凭证配置后执行发推",
+      "files": [],
+      "assertions": [
+        "Provides Twitter developer portal setup instructions",
+        "Explains all four required environment variables",
+        "Provides the exact export commands for setting credentials",
+        "Includes the post_tweet.py command for the actual tweet"
+      ]
+    }
+  ]
+}

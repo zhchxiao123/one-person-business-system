@@ -1,0 +1,230 @@
+name: "tutorial-steps"
+description: "教程步骤风：绿色系，步骤感强，代码块醒目，适合教程实战类文章"
+colors:
+  primary: "#16a34a"
+  secondary: "#22c55e"
+  text: "#1c1917"
+  text_light: "#78716c"
+  background: "#ffffff"
+  code_bg: "#f0fdf4"
+  code_color: "#15803d"
+  quote_border: "#16a34a"
+  quote_bg: "#f0fdf4"
+  border_radius: "8px"
+darkmode:
+  background: "#0f1a12"
+  text: "#ecfdf5"
+  text_light: "#86efac"
+  primary: "#4ade80"
+  code_bg: "#052e16"
+  code_color: "#86efac"
+  quote_bg: "#052e16"
+  quote_border: "#4ade80"
+base_css: |
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.85;
+    color: #1c1917;
+    background: #ffffff;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px;
+    word-wrap: break-word;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1c1917;
+    margin: 36px 0 18px 0;
+    text-align: center;
+    line-height: 1.4;
+    padding-bottom: 16px;
+    border-bottom: 3px solid #16a34a;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1c1917;
+    margin: 32px 0 14px 0;
+    padding: 10px 14px 10px 18px;
+    border-left: 5px solid #16a34a;
+    background: #f0fdf4;
+    border-radius: 0 8px 8px 0;
+    line-height: 1.4;
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
+    background: #16a34a;
+    margin: 24px 0 12px 0;
+    padding: 7px 14px;
+    border-radius: 20px;
+    line-height: 1.4;
+    display: inline-block;
+  }
+
+  p {
+    font-size: 16px;
+    line-height: 1.85;
+    color: #1c1917;
+    margin: 14px 0;
+  }
+
+  strong {
+    font-weight: 700;
+    color: #15803d;
+    background: #dcfce7;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  em {
+    font-style: italic;
+    color: #78716c;
+  }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 13.5px;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid #bbf7d0;
+  }
+
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 18px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 18px 0;
+    line-height: 1.65;
+    border-top: 3px solid #16a34a;
+  }
+
+  pre code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 13.5px;
+    background: none;
+    color: #e2e8f0;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+  }
+
+  blockquote {
+    border-left: 4px solid #16a34a;
+    background: #f0fdf4;
+    margin: 18px 0;
+    padding: 12px 18px;
+    border-radius: 0 8px 8px 0;
+    color: #374151;
+  }
+
+  blockquote p {
+    margin: 6px 0;
+    color: #374151;
+  }
+
+  ul, ol {
+    padding-left: 8px;
+    margin: 14px 0;
+    list-style: none;
+  }
+
+  li {
+    font-size: 16px;
+    line-height: 1.85;
+    color: #1c1917;
+    margin: 8px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  ul li::before {
+    content: "✓";
+    color: #16a34a;
+    font-weight: 700;
+    position: absolute;
+    left: 0;
+  }
+
+  ol {
+    counter-reset: ol-counter;
+  }
+
+  ol li {
+    counter-increment: ol-counter;
+  }
+
+  ol li::before {
+    content: counter(ol-counter);
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    top: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 15px;
+  }
+
+  th {
+    background: #16a34a;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid #16a34a;
+  }
+
+  td {
+    padding: 10px 14px;
+    border: 1px solid #dcfce7;
+    color: #1c1917;
+  }
+
+  tr:nth-child(even) td {
+    background: #f0fdf4;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 24px auto;
+    border-radius: 8px;
+    border: 2px solid #dcfce7;
+  }
+
+  a {
+    color: #16a34a;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(to right, #16a34a, #86efac, transparent);
+    margin: 28px 0;
+  }
