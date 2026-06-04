@@ -1,0 +1,55 @@
+{
+  "skill_name": "design-doc-html",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我做一份 Redis 缓存层设计文档的 HTML 展示文档。背景是我们要给一个电商平台加一个 Redis 缓存层来减轻数据库压力。需要覆盖：背景与动机、目标与非目标、缓存策略选型（Cache-Aside vs Write-Through vs Write-Behind）、数据模型、缓存失效与一致性设计、发布方案。输出为 output.html 保存在 /tmp/ 目录。",
+      "expected_output": "A single self-contained HTML file at /tmp/output.html with: left sidebar navigation, paginated slides (one per topic), Mermaid diagrams or tables for architecture/comparisons, proper use of design-table for goals/tradeoffs, code-block for config examples, status-pills for phase tracking, and a cover slide.",
+      "files": [],
+      "assertions": [
+        "The output HTML file exists at /tmp/output.html",
+        "The HTML file contains a sidebar with nav-list items matching the number of slides",
+        "The HTML file includes at least one Mermaid diagram (class='mermaid')",
+        "The HTML file contains a design-table or roadmap-table for structured content",
+        "The HTML file contains a cover slide (slide 0) with an h1 heading",
+        "The HTML file includes the Mermaid CDN script import from jsdelivr",
+        "The HTML file references the Inter font from Google Fonts",
+        "The number of .nav-item elements matches the number of .slide elements",
+        "The HTML file contains a bottom-bar with prev/next buttons and page indicator",
+        "The file covers cache strategy comparison (Cache-Aside, Write-Through, or Write-Behind)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我需要一份 API 网关设计的技术评审文档，做成 HTML 展示格式。这个 API 网关要支持：请求路由、限流、认证（JWT + API Key）、日志追踪。请帮我生成一个完整的 HTML 设计文档，保存到 /tmp/api-gateway.html",
+      "expected_output": "A complete HTML design doc at /tmp/api-gateway.html covering: background/motivation, goals, architecture (with Mermaid diagram), authentication design, rate limiting, logging/tracing, and deployment plan. Should have 8+ slides with proper navigation.",
+      "files": [],
+      "assertions": [
+        "The output HTML file exists at /tmp/api-gateway.html",
+        "The HTML has at least 7 slides (section.slide elements)",
+        "The HTML includes a Mermaid architecture or flow diagram",
+        "The HTML contains a section covering authentication (JWT or API Key)",
+        "The HTML contains a section covering rate limiting",
+        "The sidebar nav items count matches the slides count",
+        "The HTML uses the diagram-card CSS class for at least one container",
+        "The HTML file is self-contained (no external CSS links except Google Fonts and Mermaid CDN)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "把下面这个大纲做成一份 HTML 设计展示文档，保存到 /tmp/search-doc.html：\n\n# 站内搜索重构方案\n\n## 背景\n现有搜索基于 MySQL LIKE 查询，性能差，不支持分词\n\n## 目标\n- 引入 Elasticsearch\n- 支持中文分词\n- 搜索响应 P95 < 200ms\n\n## 方案设计\n- ES 集群：3 节点，1 primary + 1 replica\n- 索引设计：商品索引、用户索引\n- 数据同步：MySQL binlog → Canal → ES\n\n## 发布计划\n- 第一周：搭建 ES 集群\n- 第二周：数据同步链路\n- 第三周：灰度切流 10%\n- 第四周：全量上线",
+      "expected_output": "A complete HTML design showcase at /tmp/search-doc.html that faithfully represents the outline content. Should have a cover slide, slides for background/goals/design/rollout, use roadmap-table for the 4-week plan, use Mermaid for the data sync pipeline (MySQL → Canal → ES), and appropriate design-tables for ES cluster design.",
+      "files": [],
+      "assertions": [
+        "The output HTML file exists at /tmp/search-doc.html",
+        "The HTML contains content about Elasticsearch",
+        "The HTML contains a roadmap-table for the 4-week delivery plan",
+        "The HTML includes a Mermaid diagram showing the data sync pipeline",
+        "The HTML has a cover slide (first .slide) with an h1 heading",
+        "The sidebar nav items count matches the slides count",
+        "The HTML contains the performance target P95 < 200ms somewhere",
+        "The HTML file includes the initPagination JavaScript function"
+      ]
+    }
+  ]
+}

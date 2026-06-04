@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><!-- DOC_TITLE --></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            fontFamily: 'Inter, sans-serif',
+            flowchart: { padding: 30, subGraphTitleMargin: 15 },
+            sequence: { showSequenceNumbers: true, actorMargin: 55, messageMargin: 45, noteMargin: 18 }
+        });
+        document.fonts.ready.then(() => {
+            mermaid.run({ querySelector: '.mermaid' }).then(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('slidesContainer').classList.add('ready');
+                if (typeof window.initPagination === 'function') window.initPagination();
+            }).catch(err => {
+                console.error("Mermaid error:", err);
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('slidesContainer').classList.add('ready');
+                if (typeof window.initPagination === 'function') window.initPagination();
+            });
+        });
+    </script>
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --sidebar-width: 280px;
+        }
+        body {
+            margin: 0; overflow: hidden;
+            display: flex; height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; color: #1e293b; line-height: 1.6;
+        }
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-width); background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; height: 100%; z-index: 10;
+        }
+        .sidebar-header {
+            padding: 24px 20px; border-bottom: 1px solid #e2e8f0; background: #ffffff;
+        }
+        .sidebar-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0; line-height: 1.4; }
+        .sidebar-subtitle { font-size: 0.85rem; color: #64748b; margin-top: 6px; }
+        .nav-list { flex: 1; overflow-y: auto; padding: 16px 0; list-style: none; margin: 0; }
+        .nav-item {
+            padding: 12px 20px; cursor: pointer; font-size: 0.95rem; color: #475569;
+            border-left: 3px solid transparent; transition: all 0.2s; line-height: 1.4;
+        }
+        .nav-item:hover { background: #f1f5f9; color: #0f172a; }
+        .nav-item.active {
+            background: #eff6ff; color: var(--primary);
+            border-left-color: var(--primary); font-weight: 600;
+        }
+        /* ── Main Area ── */
+        .main-area { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
+        .content-wrapper { flex: 1; overflow-y: auto; padding: 40px 60px; scroll-behavior: smooth; }
+        .slides-container { position: relative; width: 100%; }
+        .slides-container:not(.ready) .slide { display: block; margin-bottom: 200px; }
+        .slides-container.ready .slide { display: none; }
+        .slides-container.ready .slide.active {
+            display: block;
+            animation: fadeIn 0.4s ease forwards;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-content { max-width: 1100px; margin: 0 auto; padding-bottom: 40px; }
+        /* ── Bottom Bar ── */
+        .bottom-bar {
+            height: 70px; border-top: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; background: #ffffff;
+            box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.02); z-index: 10;
+        }
+        .btn {
+            padding: 10px 24px; border-radius: 8px; border: 1px solid #cbd5e1;
+            background: #ffffff; color: #334155; font-size: 0.95rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .btn:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; background: #f1f5f9; }
+        .btn-primary { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-hover); border-color: var(--primary-hover); color: #ffffff; }
+        .page-indicator { font-size: 0.95rem; color: #64748b; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+        /* ── Typography ── */
+        h1 { font-size: 2.5rem; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin: 0 0 30px; }
+        h2 {
+            font-size: 1.8rem; color: #1e293b; margin: 0 0 24px;
+            display: flex; align-items: center;
+        }
+        h2::before {
+            content: ''; display: inline-block; width: 8px; height: 24px;
+            background-color: var(--primary); margin-right: 12px; border-radius: 4px;
+        }
+        h3 { color: #334155; font-size: 1.3rem; margin: 30px 0 15px; }
+        p.desc { color: #64748b; margin-bottom: 30px; font-size: 1.05rem; }
+        /* ── Diagram Card ── */
+        .diagram-card {
+            background-color: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 12px; padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            overflow-x: auto; margin-bottom: 40px;
+        }
+        .roadmap-card { padding: 28px; }
+        .mermaid { display: flex; justify-content: center; }
+        /* ── Tables ── */
+        .roadmap-table, .design-table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            border: 1px solid #e2e8f0; border-radius: 10px;
+            overflow: hidden; background: #ffffff; margin-bottom: 22px;
+        }
+        .roadmap-table { min-width: 760px; }
+        .roadmap-table th, .roadmap-table td,
+        .design-table th, .design-table td {
+            padding: 14px 16px; border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left; vertical-align: top; font-size: 13px; line-height: 1.65;
+        }
+        .roadmap-table th, .design-table th {
+            background: #f1f5f9; color: #0f172a; font-weight: 700; white-space: nowrap;
+        }
+        .roadmap-table th { background: #eef2ff; color: #1e1b4b; }
+        .roadmap-table tr:last-child td, .design-table tr:last-child td { border-bottom: 0; }
+        .roadmap-table th:last-child, .roadmap-table td:last-child,
+        .design-table th:last-child, .design-table td:last-child { border-right: 0; }
+        .roadmap-week-cell { width: 116px; font-weight: 700; color: #0f172a; background: #f8fafc; }
+        .roadmap-time-cell { width: 112px; color: #475569; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+        .roadmap-table ul { margin: 0; padding-left: 18px; }
+        .roadmap-table li { margin: 0 0 6px; }
+        .design-table code {
+            color: #334155; background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 4px; padding: 1px 5px;
+            font-family: 'JetBrains Mono', monospace; font-size: 12px;
+        }
+        /* ── Code Block ── */
+        .code-block {
+            margin: 0; padding: 14px 16px; border: 1px solid #e2e8f0;
+            border-radius: 8px; background: #0f172a; color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            line-height: 1.65; overflow-x: auto;
+        }
+        /* ── Detail Panel ── */
+        .detail-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+        .detail-panel summary { cursor: pointer; padding: 14px 16px; font-weight: 700; color: #0f172a; background: #f8fafc; }
+        .detail-panel-content { padding: 16px; color: #475569; font-size: 13px; line-height: 1.7; }
+        .detail-panel-content ul { margin: 0; padding-left: 20px; }
+        /* ── Requirement Cards ── */
+        .req-group { margin-bottom: 24px; background: #f8fafc; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; }
+        .req-group-title { font-size: 1.15rem; color: #0f172a; margin: 0 0 16px; display: flex; align-items: center; font-weight: 600; }
+        .requirements-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+        .req-item {
+            background: #ffffff; border: 1px solid #e2e8f0; padding: 20px 24px;
+            border-radius: 8px; display: flex; align-items: flex-start;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s;
+        }
+        .req-item:hover { transform: translateX(4px); border-color: #cbd5e1; }
+        .req-number {
+            background-color: #eff6ff; color: var(--primary); font-weight: 600;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; margin-right: 16px; flex-shrink: 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .req-content h4 { margin: 0 0 6px; color: #0f172a; font-size: 1.1rem; }
+        .req-content p { margin: 0; color: #475569; font-size: 0.95rem; }
+        /* ── Status Pills ── */
+        .status-pill {
+            display: inline-flex; align-items: center; border-radius: 999px;
+            padding: 2px 9px; font-size: 11px; font-weight: 700; white-space: nowrap;
+        }
+        .status-pill.done { background: #dcfce7; color: #166534; }
+        .status-pill.partial { background: #fef9c3; color: #854d0e; }
+        .status-pill.target { background: #dbeafe; color: #1d4ed8; }
+        /* ── Mermaid overrides ── */
+        .mermaid svg text { font-size: 14px !important; font-family: 'Inter', sans-serif !important; }
+        .mermaid .node text { font-size: 13.5px !important; font-weight: 500 !important; }
+        .mermaid .subgraphLabel, .mermaid g.subgraph-title, .mermaid text.subgraphTitle {
+            font-size: 16px !important; font-weight: 700 !important; fill: #0f172a !important;
+        }
+        .mermaid .actor { font-size: 15px !important; font-weight: 600 !important; }
+        .mermaid .messageText { font-size: 13.5px !important; }
+        .mermaid .noteText { font-size: 12.5px !important; }
+        .mermaid .edgeLabel text { font-size: 12px !important; font-weight: 500 !important; fill: #475569 !important; }
+        /* ── Loading overlay ── */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="width:44px;height:44px;border:4px solid #f1f5f9;border-top:4px solid #3b82f6;border-radius:50%;animation:spin 1s linear infinite;"></div>
+    <div style="margin-top:24px;color:#475569;font-size:1rem;font-weight:500;">正在初始化图表引擎...</div>
+</div>
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h1 class="sidebar-title"><!-- SIDEBAR_TITLE --></h1>
+        <div class="sidebar-subtitle"><!-- SIDEBAR_SUBTITLE --></div>
+    </div>
+    <ul class="nav-list" id="navList">
+        <!-- NAV_ITEMS -->
+        <!-- Each item: <li class="nav-item">导航文字</li> -->
+    </ul>
+</aside>
+
+<main class="main-area">
+    <div class="content-wrapper" id="contentWrapper">
+        <div id="slidesContainer" class="slides-container">
+
+            <!-- SLIDES_HERE -->
+            <!-- Each slide:
+            <section class="slide">
+                <div class="slide-content">
+                    ... content ...
+                </div>
+            </section>
+            -->
+
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <button id="prevBtn" class="btn" disabled>&larr; 上一页</button>
+        <div id="pageIndicator" class="page-indicator">1 / 1</div>
+        <button id="nextBtn" class="btn btn-primary">下一页 &rarr;</button>
+    </div>
+</main>
+
+<script>
+    let currentSlideIndex = 0;
+    let slides = [], navItems = [];
+
+    function initPagination() {
+        slides = document.querySelectorAll('.slide');
+        navItems = document.querySelectorAll('.nav-item');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageIndicator = document.getElementById('pageIndicator');
+        const contentWrapper = document.getElementById('contentWrapper');
+
+        function goToSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            currentSlideIndex = index;
+            navItems.forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+                if (i === index) item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+            slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+            if (contentWrapper) contentWrapper.scrollTop = 0;
+            if (prevBtn) prevBtn.disabled = index === 0;
+            if (nextBtn) nextBtn.disabled = index === slides.length - 1;
+            if (pageIndicator) pageIndicator.textContent = `${index + 1} / ${slides.length}`;
+        }
+
+        navItems.forEach((item, i) => item.addEventListener('click', () => goToSlide(i)));
+        if (prevBtn) prevBtn.addEventListener('click', () => goToSlide(currentSlideIndex - 1));
+        if (nextBtn) nextBtn.addEventListener('click', () => goToSlide(currentSlideIndex + 1));
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft') goToSlide(currentSlideIndex - 1);
+            if (e.key === 'ArrowRight') goToSlide(currentSlideIndex + 1);
+        });
+
+        goToSlide(0);
+    }
+
+    window.initPagination = initPagination;
+</script>
+
+</body>
+</html>
