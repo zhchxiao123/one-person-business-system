@@ -1,0 +1,11 @@
+services:
+  openai-proxy:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com}
+      - OPENAI_API_KEYS=${OPENAI_API_KEYS}
+      - PROXY_API_KEYS=${PROXY_API_KEYS}
+      - TIMEOUT=${TIMEOUT:-120}
+    restart: unless-stopped
