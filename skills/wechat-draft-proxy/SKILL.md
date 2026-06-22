@@ -1,6 +1,6 @@
 ---
 name: wechat-draft-proxy
-description: 微信公众号草稿箱创建工具（Node.js 代理服务器版）。通过固定 IP 的代理服务器中转微信 API 调用，客户端不需要加入微信 IP 白名单。支持直接提交已排版 HTML，支持封面图（本地文件或 URL）、原文链接。推荐与 wechat-styler 搭配使用发布公众号文章。
+description: 微信公众号草稿箱创建 + 视频素材上传工具（代理服务器版）。通过固定 IP 的代理服务器中转微信 API 调用，客户端不需要加入微信 IP 白名单。支持直接提交已排版 HTML、封面图、原文链接；支持上传视频到公众号【永久素材库】（material/add_material?type=video），便于后续在公众号后台手动群发或嵌入图文。推荐与 wechat-styler 搭配使用发布公众号文章。
 triggers:
   - 微信草稿
   - 发公众号
@@ -10,6 +10,10 @@ triggers:
   - 投稿微信
   - 草稿箱
   - 微信公众号发布
+  - 上传视频到公众号
+  - 公众号视频
+  - 视频素材
+  - upload video to wechat
 ---
 # Wechat Draft Proxy - 微信公众号草稿箱工具（Node.js 代理版）
 
@@ -115,6 +119,39 @@ node ~/.grok/skills/wechat-draft-proxy/scripts/create_draft.js \
   --html
 ```
 
+### 5. 上传视频到永久素材库 🆕
+
+适用于播客视频、教程视频等产物的分发。**仅认证服务号可用**，单公众号最多 1000 条非图文永久素材；视频建议 MP4 格式，体积 ≤ 20MB 最稳。
+
+```bash
+# 基本用法
+python3 ~/.grok/skills/wechat-draft-proxy/scripts/upload_video.py \
+  --file /path/to/episode-01.mp4 \
+  --title "EP01 主题" \
+  --introduction "本期简介：xxx"
+
+# 大文件 / 慢网络可加大超时
+python3 scripts/upload_video.py \
+  --file big.mp4 --title "标题" --introduction "简介" --timeout 1200
+
+# 脚本化调用（只输出 JSON）
+python3 scripts/upload_video.py --file v.mp4 --title "x" --json
+```
+
+输出示例：
+
+```
+✅ 视频上传成功
+   media_id: STUB_MEDIA_ID
+   url:      https://stub.video/test.mp4
+   大小:     0.00 MB
+```
+
+**上传成功后，media_id 可用于**：
+- 手动在公众号后台「素材管理 → 视频」查看
+- 配合 `create_draft.js` 把视频嵌入到图文（用 `<iframe>`/`<video>` 引用 `url` 字段，或用 `mpnews` 文章类型）
+- 调 `/cgi-bin/media/uploadvideo` 转群发素材后用 `mpvideo` 类型群发（需服务号，每月 4 次群发配额）
+
 ## 快速命令（技能目录内）
 
 ```bash
@@ -122,6 +159,7 @@ cd ~/.grok/skills/wechat-draft-proxy
 
 # 查看帮助
 node scripts/create_draft.js --help
+python3 scripts/upload_video.py --help
 
 # 安装后首次配置（只需一次）
 cp .env.example .env
@@ -129,6 +167,7 @@ cp .env.example .env
 
 # 之后直接运行，无需传 server/api-key
 node scripts/create_draft.js --title "测试" --content "# Hello" --html
+python3 scripts/upload_video.py --file demo.mp4 --title "测试视频"
 ```
 
 ## 参数说明
@@ -170,6 +209,11 @@ node scripts/create_draft.js --title "测试" --content "# Hello" --html
 服务端（推荐 Node.js 版）位于仓库根目录 `wechat-proxy-server/`，提供 Dockerfile + docker-compose 一键部署（纯 Node.js，零依赖）。
 
 部署后务必将服务器出口 IP 加入微信公众平台「设置 → 开发设置 → IP 白名单」。
+
+**已实现的接口：**
+- `GET  /health` — 健康检查
+- `POST /api/draft` — 创建公众号草稿（图文章）
+- `POST /api/video/upload-permanent` — 上传视频到永久素材库（新增）
 
 详细说明见 [wechat-proxy-server/README.md](/workspace/wechat-proxy-server/README.md)。
 

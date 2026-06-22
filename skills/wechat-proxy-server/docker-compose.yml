@@ -1,8 +1,15 @@
 services:
   wechat-proxy:
     build: .
+    # 如需使用 Python 旧版：build: { context: ., dockerfile: Dockerfile.python }
     ports:
       - "8000:8000"
     env_file:
       - .env
     restart: unless-stopped
+    # 健康检查（可选）
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8000/health', r => r.statusCode===200 ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

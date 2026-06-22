@@ -119,6 +119,59 @@ def create_draft(req: DraftRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ── 上传视频到永久素材库 ──────────────────────────────────────────────────
+from fastapi import File, Form, UploadFile  # noqa: E402
+
+
+@app.post(
+    "/api/video/upload-permanent",
+    dependencies=[Depends(verify_api_key)],
+)
+async def upload_video_permanent(
+    video: UploadFile = File(..., description="视频文件 (mp4 优先)"),
+    title: str = Form("", description="视频标题，会写入素材库 description"),
+    introduction: str = Form("", description="视频简介，会写入素材库 description"),
+):
+    """
+    将视频上传到公众号【永久素材库】(material/add_material?type=video)。
+    返回 { media_id, url, filename, size }。
+    上传后可：
+      1. 在公众号后台「素材管理」直接看到该视频
+      2. 把 media_id 喂给 /api/draft(用图文嵌入)
+      3. 调 /cgi-bin/media/uploadvideo 转群发素材
+    """
+    try:
+        video_data = await video.read()
+        size_mb = len(video_data) / 1024 / 1024
+        log.info(f"上传视频: {video.filename} ({size_mb:.2f}MB)")
+        if not video_data:
+            raise HTTPException(status_code=400, detail="视频文件为空")
+        if size_mb > 20:
+            log.warning(f"视频 {size_mb:.2f}MB 超过 20MB，微信可能拒收")
+
+        token = wx.get_access_token(WECHAT_APPID, WECHAT_APPSECRET)
+        result = wx.upload_permanent_video(
+            token=token,
+            video_data=video_data,
+            filename=video.filename or "video.mp4",
+            title=title,
+            introduction=introduction,
+        )
+        log.info(f"视频素材上传成功: media_id={result['media_id']}")
+        return {
+            "success": True,
+            "media_id": result["media_id"],
+            "url": result["url"],
+            "filename": video.filename,
+            "size": len(video_data),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.exception("视频上传异常")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

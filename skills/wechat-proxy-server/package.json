@@ -1,0 +1,25 @@
+{
+  "name": "wechat-proxy-server",
+  "version": "2.1.0",
+  "description": "微信公众号代理服务器（纯 Node.js 版）。固定 IP 部署后加入微信白名单，客户端通过 API Key 调用，无需暴露微信 AppID/Secret。支持创建图文草稿 + 上传视频到永久素材库。",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "wechat",
+    "微信公众号",
+    "draft",
+    "草稿箱",
+    "proxy",
+    "公众号发布",
+    "IP白名单"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "type": "commonjs"
+}

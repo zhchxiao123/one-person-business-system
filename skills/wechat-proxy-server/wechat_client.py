@@ -104,6 +104,40 @@ def upload_permanent_image(token: str, image_data: bytes, filename: str = "cover
     return result["media_id"]
 
 
+def upload_permanent_video(
+    token: str,
+    video_data: bytes,
+    filename: str = "video.mp4",
+    title: str = "",
+    introduction: str = "",
+) -> dict:
+    """
+    上传永久视频素材 (add_material?type=video)。
+    返回 { media_id, url }; url 可用于图文 content 中的 <video src=...>。
+    - description 字段必须是 JSON 字符串: {"title": ..., "introduction": ...}
+    - 仅认证服务号可用; 单个公众号最多 1000 条非图文永久素材
+    - 视频建议 ≤ 10MB(部分文档允许 1GB,但实际中 10MB 最稳), 格式 mp4
+    """
+    if not video_data:
+        raise Exception("视频文件为空")
+    description = json.dumps(
+        {"title": title or filename, "introduction": introduction or ""},
+        ensure_ascii=False,
+    )
+    ext = (filename.rsplit(".", 1)[-1] or "mp4").lower().split("?")[0]
+    mime = "video/mp4" if ext == "mp4" else ("video/quicktime" if ext == "mov" else "video/mp4")
+    resp = requests.post(
+        f"https://api.weixin.qq.com/cgi-bin/material/add_material?access_token={token}&type=video",
+        files={"media": (filename, video_data, mime)},
+        data={"description": description},
+        timeout=300,  # 视频大, 给足超时
+    )
+    result = resp.json()
+    if "media_id" not in result:
+        raise Exception(f"上传视频素材失败: {result}")
+    return {"media_id": result["media_id"], "url": result.get("url", "")}
+
+
 def get_fallback_thumb_media_id(token: str) -> str:
     """从素材库取第一张图片的 media_id 作为封面 fallback。"""
     resp = requests.post(
