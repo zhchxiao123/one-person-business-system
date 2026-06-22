@@ -1,7 +1,7 @@
 {
   "name": "wechat-draft-proxy",
-  "version": "2.1.0",
-  "description": "微信公众号草稿箱创建 + 视频素材上传工具（Node.js 版） - 通过固定 IP 代理服务器发布到微信公众号，无需客户端配置微信 IP 白名单",
+  "version": "2.2.0",
+  "description": "微信公众号草稿箱 + 视频一站式发布（Node.js 版） - 通过固定 IP 代理服务器发布到微信公众号 + 视频号，无需客户端配置微信 IP 白名单",
   "main": "scripts/create_draft.js",
   "bin": {
     "wechat-draft": "./scripts/create_draft.js"
@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node scripts/create_draft.js",
     "draft": "node scripts/create_draft.js",
-    "upload-video": "python3 scripts/upload_video.py"
+    "upload-video": "python3 scripts/upload_video.py",
+    "send-video": "python3 scripts/send_video.py"
   },
   "keywords": [
     "wechat",
@@ -19,7 +20,9 @@
     "proxy",
     "公众号发布",
     "video",
-    "视频素材"
+    "视频素材",
+    "mpvideo",
+    "视频号"
   ],
   "author": "",
   "license": "MIT",

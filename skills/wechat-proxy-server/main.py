@@ -172,6 +172,63 @@ async def upload_video_permanent(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class VideoMassSendRequest(BaseModel):
+    media_id: str                                  # 群发素材 media_id(从 convert-to-mass 获得)
+    title: str = ""
+    description: str = ""
+    is_to_all: bool = True
+    tag_id: int = 0
+
+
+class VideoConvertRequest(BaseModel):
+    media_id: str                                  # 永久素材 media_id
+    title: str = ""
+    description: str = ""
+
+
+# ── 视频转群发素材 ───────────────────────────────────────────────────────
+@app.post(
+    "/api/video/convert-to-mass",
+    dependencies=[Depends(verify_api_key)],
+)
+async def convert_video_to_mass(req: VideoConvertRequest):
+    try:
+        token = wx.get_access_token(WECHAT_APPID, WECHAT_APPSECRET)
+        result = wx.convert_video_to_mass(token, req.media_id, req.title, req.description)
+        log.info(f"视频转群发素材成功: {result['media_id']}")
+        return {"success": True, **result}
+    except Exception as e:
+        log.exception("convert 异常")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── 创建 mpvideo 群发任务 ───────────────────────────────────────────────
+@app.post(
+    "/api/video/mass-send",
+    dependencies=[Depends(verify_api_key)],
+)
+async def mass_send_video(req: VideoMassSendRequest):
+    try:
+        token = wx.get_access_token(WECHAT_APPID, WECHAT_APPSECRET)
+        result = wx.create_mass_video_task(
+            token=token,
+            mass_media_id=req.media_id,
+            title=req.title,
+            description=req.description,
+            is_to_all=req.is_to_all,
+            tag_id=req.tag_id,
+        )
+        log.info(f"mpvideo 群发任务创建成功: msg_id={result['msg_id']}")
+        return {
+            "success": True,
+            **result,
+            "note": "任务已创建,需在公众号后台「群发消息」中预览并点击\"群发\"才会真正推送(48h 预览期)。",
+        }
+    except Exception as e:
+        log.exception("mass-send 异常")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

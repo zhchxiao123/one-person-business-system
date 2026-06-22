@@ -138,6 +138,78 @@ def upload_permanent_video(
     return {"media_id": result["media_id"], "url": result.get("url", "")}
 
 
+def convert_video_to_mass(
+    token: str,
+    media_id: str,
+    title: str = "",
+    description: str = "",
+) -> dict:
+    """
+    把永久素材 media_id 转成「可群发」的群发素材 media_id
+    调 /cgi-bin/media/uploadvideo,POST JSON {media_id, title, description}
+    title ≤ 64 字符, description ≤ 300 字符
+    返回 { media_id, url }
+    """
+    if not media_id:
+        raise Exception("media_id 必填")
+    payload = {
+        "media_id": media_id,
+        "title": (title or "")[:64],
+        "description": (description or "")[:300],
+    }
+    resp = requests.post(
+        f"https://api.weixin.qq.com/cgi-bin/media/uploadvideo?access_token={token}",
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        timeout=30,
+    )
+    result = resp.json()
+    if "media_id" not in result:
+        raise Exception(f"转换群发素材失败: {result}")
+    return {"media_id": result["media_id"], "url": result.get("url", "")}
+
+
+def create_mass_video_task(
+    token: str,
+    mass_media_id: str,
+    title: str = "",
+    description: str = "",
+    is_to_all: bool = True,
+    tag_id: int = 0,
+) -> dict:
+    """
+    创建 mpvideo 群发任务
+    调 /cgi-bin/message/mass/sendall, msgtype=mpvideo
+    群发后会进入 48 小时预览期,需在公众号后台手动点"群发"才会真正推送
+    返回 { msg_id, msg_data_id }
+    """
+    if not mass_media_id:
+        raise Exception("群发素材 media_id 必填")
+    payload = {
+        "filter": {"is_to_all": is_to_all} if is_to_all else {"is_to_all": False, "tag_id": tag_id},
+        "mpvideo": {
+            "media_id": mass_media_id,
+            "title": (title or "")[:64],
+            "description": (description or "")[:300],
+        },
+        "msgtype": "mpvideo",
+        "send_ignore_reprint": 0,
+    }
+    resp = requests.post(
+        f"https://api.weixin.qq.com/cgi-bin/message/mass/sendall?access_token={token}",
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        timeout=30,
+    )
+    result = resp.json()
+    if result.get("errcode"):
+        raise Exception(f"创建群发任务失败: {result}")
+    return {
+        "msg_id": result.get("msg_id", ""),
+        "msg_data_id": result.get("msg_data_id", ""),
+    }
+
+
 def get_fallback_thumb_media_id(token: str) -> str:
     """从素材库取第一张图片的 media_id 作为封面 fallback。"""
     resp = requests.post(

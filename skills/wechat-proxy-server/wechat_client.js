@@ -348,6 +348,57 @@ async function uploadPermanentVideo(token, videoBuffer, filename = 'video.mp4', 
   };
 }
 
+// 把永久素材 media_id 转成「可群发」的群发素材 media_id
+// 调 /cgi-bin/media/uploadvideo,POST JSON: { media_id, title, description }
+// title ≤ 64 字符, description ≤ 300 字符
+// 返回 { media_id, url } — 第二个 media_id 才是群发 mpvideo 能用的
+async function convertVideoToMass(token, mediaId, title, description) {
+  if (!mediaId) throw new Error('media_id 必填');
+  const t = (title || '').slice(0, 64);
+  const d = (description || '').slice(0, 300);
+  const url = `https://api.weixin.qq.com/cgi-bin/media/uploadvideo?access_token=${token}`;
+  const result = await httpsPostJSON(url, { media_id: mediaId, title: t, description: d });
+  if (!result.media_id) {
+    throw new Error(`转换群发素材失败: ${JSON.stringify(result)}`);
+  }
+  return {
+    media_id: result.media_id,
+    url: result.url || '',
+  };
+}
+
+// 创建 mpvideo 群发任务
+// 调 /cgi-bin/message/mass/sendall, msgtype=mpvideo
+// filter: { is_to_all: true } 全员; 或 { is_to_all: false, tag_id: 2 } 按标签
+// 注意:群发后会进入 48 小时预览期,需在公众号后台手动点"群发"才会真正推送
+// 返回 { msg_id, msg_data_id }
+async function createMassVideoTask(token, massMediaId, title, description, opts = {}) {
+  if (!massMediaId) throw new Error('群发素材 media_id 必填');
+  const isToAll = opts.is_to_all !== false;  // 默认全员
+  const tagId = opts.tag_id || 0;
+  const payload = {
+    filter: isToAll
+      ? { is_to_all: true }
+      : { is_to_all: false, tag_id: tagId },
+    mpvideo: {
+      media_id: massMediaId,
+      title: (title || '').slice(0, 64),
+      description: (description || '').slice(0, 300),
+    },
+    msgtype: 'mpvideo',
+    send_ignore_reprint: 0,
+  };
+  const url = `https://api.weixin.qq.com/cgi-bin/message/mass/sendall?access_token=${token}`;
+  const result = await httpsPostJSON(url, payload);
+  if (result.errcode) {
+    throw new Error(`创建群发任务失败: ${JSON.stringify(result)}`);
+  }
+  return {
+    msg_id: result.msg_id || '',
+    msg_data_id: result.msg_data_id || '',
+  };
+}
+
 async function getFallbackThumbMediaId(token) {
   const url = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`;
   const res = await httpsPostJSON(url, { type: 'image', offset: 0, count: 1 });
@@ -431,6 +482,8 @@ module.exports = {
   uploadContentImage,
   uploadPermanentImage,
   uploadPermanentVideo,
+  convertVideoToMass,
+  createMassVideoTask,
   getFallbackThumbMediaId,
   processContentImages,
   createDraft,

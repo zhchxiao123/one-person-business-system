@@ -243,6 +243,60 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // 转换永久素材 → 群发素材
+  if (pathname === '/api/video/convert-to-mass' && req.method === 'POST') {
+    const headerKey = req.headers['x-api-key'] || req.headers['X-API-Key'] || req.headers['x-api-key'.toLowerCase()];
+    if (!headerKey || headerKey !== API_KEY) {
+      return sendJSON(res, 401, { success: false, error: 'Invalid API key' });
+    }
+    try {
+      const raw = await readRequestBody(req);
+      const body = JSON.parse(raw || '{}');
+      if (!body.media_id) {
+        return sendJSON(res, 400, { success: false, error: 'media_id 必填' });
+      }
+      const token = await wx.getAccessToken(WECHAT_APPID, WECHAT_APPSECRET);
+      const result = await wx.convertVideoToMass(token, body.media_id, body.title || '', body.description || '');
+      console.log(`[wechat-proxy] 视频转群发素材成功: ${result.media_id}`);
+      return sendJSON(res, 200, { success: true, ...result });
+    } catch (err) {
+      console.error('[wechat-proxy] convert 异常:', err && err.stack ? err.stack : err);
+      return sendJSON(res, 500, { success: false, error: (err && err.message) || String(err) });
+    }
+  }
+
+  // 创建 mpvideo 群发任务
+  if (pathname === '/api/video/mass-send' && req.method === 'POST') {
+    const headerKey = req.headers['x-api-key'] || req.headers['X-API-Key'] || req.headers['x-api-key'.toLowerCase()];
+    if (!headerKey || headerKey !== API_KEY) {
+      return sendJSON(res, 401, { success: false, error: 'Invalid API key' });
+    }
+    try {
+      const raw = await readRequestBody(req);
+      const body = JSON.parse(raw || '{}');
+      if (!body.media_id) {
+        return sendJSON(res, 400, { success: false, error: '群发素材 media_id 必填(调 /api/video/convert-to-mass 获得)' });
+      }
+      const token = await wx.getAccessToken(WECHAT_APPID, WECHAT_APPSECRET);
+      const result = await wx.createMassVideoTask(
+        token,
+        body.media_id,
+        body.title || '',
+        body.description || '',
+        { is_to_all: body.is_to_all !== false, tag_id: body.tag_id || 0 },
+      );
+      console.log(`[wechat-proxy] mpvideo 群发任务创建成功: msg_id=${result.msg_id}`);
+      return sendJSON(res, 200, {
+        success: true,
+        ...result,
+        note: '任务已创建,需在公众号后台「群发消息」中预览并点击"群发"才会真正推送(48h 预览期)。',
+      });
+    } catch (err) {
+      console.error('[wechat-proxy] mass-send 异常:', err && err.stack ? err.stack : err);
+      return sendJSON(res, 500, { success: false, error: (err && err.message) || String(err) });
+    }
+  }
+
   // 404
   sendJSON(res, 404, { success: false, error: 'Not Found' });
 });
@@ -254,6 +308,8 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`健康检查: http://localhost:${PORT}/health`);
   console.log(`草稿接口: POST /api/draft  (需 X-API-Key 头)`);
   console.log(`视频上传: POST /api/video/upload-permanent  (multipart/form-data, 需 X-API-Key 头)`);
+  console.log(`视频转群发: POST /api/video/convert-to-mass  (JSON, 需 X-API-Key 头)`);
+  console.log(`视频群发: POST /api/video/mass-send  (JSON, 需 X-API-Key 头,需先 convert)`);
 });
 
 // 优雅退出

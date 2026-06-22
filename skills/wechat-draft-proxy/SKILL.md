@@ -13,6 +13,9 @@ triggers:
   - 上传视频到公众号
   - 公众号视频
   - 视频素材
+  - 公众号视频群发
+  - 同步到视频号
+  - mpvideo
   - upload video to wechat
 ---
 # Wechat Draft Proxy - 微信公众号草稿箱工具（Node.js 代理版）
@@ -152,6 +155,55 @@ python3 scripts/upload_video.py --file v.mp4 --title "x" --json
 - 配合 `create_draft.js` 把视频嵌入到图文（用 `<iframe>`/`<video>` 引用 `url` 字段，或用 `mpnews` 文章类型）
 - 调 `/cgi-bin/media/uploadvideo` 转群发素材后用 `mpvideo` 类型群发（需服务号，每月 4 次群发配额）
 
+### 6. 一站式发布: 公众号视频消息 + 视频号同步 (方案 A) 🆕🎯
+
+> **90% 自动 + 5 秒手动** 完成「公众号 mpvideo 群发 + 视频号同步」全流程。
+>
+> 微信视频号目前**没有官方公开发布 API**,任何宣称"自动同步视频号"的服务都是浏览器自动化(账号封禁风险高)。本方案只走官方 API,人工只需 5 秒点"从公众号同步"。
+
+```bash
+# 一条命令完成: 上传 → 转群发素材 → 创建群发任务(进入 48h 预览期)
+python3 ~/.grok/skills/wechat-draft-proxy/scripts/send_video.py \
+  --file /path/to/episode-01.mp4 \
+  --title "EP01 主题" \
+  --introduction "本期简介"
+```
+
+输出:
+
+```
+  ① 上传 (6.63 MB)...
+     ✅ media_id (永久素材) = MawN9xaMbh9OSLT41ytTY6LV78khmKUNFaLNOn7F...
+  ② 转换群发素材...
+     ✅ media_id (群发素材) = rF4rc2K8x5e9c8K0b5x7d2e1f3a4b5c6
+  ③ 创建群发任务 (48h 预览期)...
+     ✅ msg_id = 3147483648
+
+🎉 一站式发布完成!
+
+📋 接下来的操作 (人工):
+   1) 打开公众号后台 → 内容与互动 → 群发消息
+   2) 预览 → 点击「群发」(48h 预览期内有效)
+   3) 推送成功后,打开「视频号助手 App」
+      → 找到该视频 → 「从公众号同步」 → 一键发到视频号
+```
+
+**子命令组合** (精细控制):
+
+| 命令 | 行为 |
+|------|------|
+| `--no-convert` | 只上传素材,不转换不群发(纯存档) |
+| `--no-mass` | 上传 + 转群发素材,不创建群发任务 |
+| `--existing-media-id <id>` | 跳过上传,用已有 media_id 直接 convert/mass |
+| `--tag-id 2 --tag-only` | 按标签群发(默认全员) |
+| `--reencode always` | 强制 ffmpeg 重编码(H.264 baseline + AAC + faststart) |
+| `--json` | 只输出 JSON(脚本集成) |
+
+**对应底层端点** (供直接调用):
+- `POST /api/video/upload-permanent` (multipart) — 上传永久素材
+- `POST /api/video/convert-to-mass` (JSON `{media_id, title, description}`) — 转群发素材
+- `POST /api/video/mass-send` (JSON `{media_id, title, description, is_to_all?, tag_id?}`) — 创建群发任务
+
 ## 快速命令（技能目录内）
 
 ```bash
@@ -160,6 +212,7 @@ cd ~/.grok/skills/wechat-draft-proxy
 # 查看帮助
 node scripts/create_draft.js --help
 python3 scripts/upload_video.py --help
+python3 scripts/send_video.py --help
 
 # 安装后首次配置（只需一次）
 cp .env.example .env
@@ -168,6 +221,7 @@ cp .env.example .env
 # 之后直接运行，无需传 server/api-key
 node scripts/create_draft.js --title "测试" --content "# Hello" --html
 python3 scripts/upload_video.py --file demo.mp4 --title "测试视频"
+python3 scripts/send_video.py --file demo.mp4 --title "一站式" --introduction "自动"
 ```
 
 ## 参数说明
@@ -213,7 +267,9 @@ python3 scripts/upload_video.py --file demo.mp4 --title "测试视频"
 **已实现的接口：**
 - `GET  /health` — 健康检查
 - `POST /api/draft` — 创建公众号草稿（图文章）
-- `POST /api/video/upload-permanent` — 上传视频到永久素材库（新增）
+- `POST /api/video/upload-permanent` — 上传视频到永久素材库
+- `POST /api/video/convert-to-mass` — 把永久素材转群发素材
+- `POST /api/video/mass-send` — 创建 mpvideo 群发任务（48h 预览期）
 
 详细说明见 [wechat-proxy-server/README.md](/workspace/wechat-proxy-server/README.md)。
 
