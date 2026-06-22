@@ -186,6 +186,26 @@ class VideoConvertRequest(BaseModel):
     description: str = ""
 
 
+class VideoGetMaterialRequest(BaseModel):
+    media_id: str
+    type: str = "video"
+
+
+# ── 查询素材详情(拿到视频源 URL) ────────────────────────────────────────
+@app.post(
+    "/api/video/get-material",
+    dependencies=[Depends(verify_api_key)],
+)
+async def get_video_material(req: VideoGetMaterialRequest):
+    try:
+        token = wx.get_access_token(WECHAT_APPID, WECHAT_APPSECRET)
+        result = wx.get_material_info(token, req.media_id, req.type)
+        return {"success": True, **result}
+    except Exception as e:
+        log.exception("get-material 异常")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ── 视频转群发素材 ───────────────────────────────────────────────────────
 @app.post(
     "/api/video/convert-to-mass",

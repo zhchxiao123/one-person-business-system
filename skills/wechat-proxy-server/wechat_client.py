@@ -169,6 +169,32 @@ def convert_video_to_mass(
     return {"media_id": result["media_id"], "url": result.get("url", "")}
 
 
+def get_material_info(token: str, media_id: str, media_type: str = "video") -> dict:
+    """
+    查询永久素材详情 —— 用于拿到视频源 URL
+    调 /cgi-bin/material/get_material,POST JSON {media_id, type}
+    返回 { media_id, title, description, down_url, url }
+    """
+    if not media_id:
+        raise Exception("media_id 必填")
+    resp = requests.post(
+        f"https://api.weixin.qq.com/cgi-bin/material/get_material?access_token={token}",
+        data=json.dumps({"media_id": media_id, "type": media_type}, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        timeout=30,
+    )
+    result = resp.json()
+    if result.get("errcode") and result.get("errcode") != 0:
+        raise Exception(f"查询素材失败: {result}")
+    return {
+        "media_id": media_id,
+        "title": result.get("title", ""),
+        "description": result.get("description", ""),
+        "down_url": result.get("down_url", ""),
+        "url": result.get("url", ""),
+    }
+
+
 def create_mass_video_task(
     token: str,
     mass_media_id: str,

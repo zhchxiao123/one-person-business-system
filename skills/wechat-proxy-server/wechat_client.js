@@ -367,6 +367,25 @@ async function convertVideoToMass(token, mediaId, title, description) {
   };
 }
 
+// 查询永久素材详情 —— 用于拿到视频的源 URL(给图文里 <iframe>/<video> 用)
+// 调 /cgi-bin/material/get_material,POST JSON { media_id, type: 'video' }
+// 返回 { media_id, url, title, description, down_url }
+async function getMaterialInfo(token, mediaId, type = 'video') {
+  if (!mediaId) throw new Error('media_id 必填');
+  const url = `https://api.weixin.qq.com/cgi-bin/material/get_material?access_token=${token}`;
+  const result = await httpsPostJSON(url, { media_id: mediaId, type });
+  if (result.errcode && result.errcode !== 0) {
+    throw new Error(`查询素材失败: ${JSON.stringify(result)}`);
+  }
+  return {
+    media_id: mediaId,
+    title: result.title || '',
+    description: result.description || '',
+    down_url: result.down_url || '',
+    url: result.url || '',
+  };
+}
+
 // 创建 mpvideo 群发任务
 // 调 /cgi-bin/message/mass/sendall, msgtype=mpvideo
 // filter: { is_to_all: true } 全员; 或 { is_to_all: false, tag_id: 2 } 按标签
@@ -484,6 +503,7 @@ module.exports = {
   uploadPermanentVideo,
   convertVideoToMass,
   createMassVideoTask,
+  getMaterialInfo,
   getFallbackThumbMediaId,
   processContentImages,
   createDraft,

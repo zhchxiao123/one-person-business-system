@@ -243,6 +243,27 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // 查询素材详情 (拿到视频的源 URL 等)
+  if (pathname === '/api/video/get-material' && req.method === 'POST') {
+    const headerKey = req.headers['x-api-key'] || req.headers['X-API-Key'] || req.headers['x-api-key'.toLowerCase()];
+    if (!headerKey || headerKey !== API_KEY) {
+      return sendJSON(res, 401, { success: false, error: 'Invalid API key' });
+    }
+    try {
+      const raw = await readRequestBody(req);
+      const body = JSON.parse(raw || '{}');
+      if (!body.media_id) {
+        return sendJSON(res, 400, { success: false, error: 'media_id 必填' });
+      }
+      const token = await wx.getAccessToken(WECHAT_APPID, WECHAT_APPSECRET);
+      const result = await wx.getMaterialInfo(token, body.media_id, body.type || 'video');
+      return sendJSON(res, 200, { success: true, ...result });
+    } catch (err) {
+      console.error('[wechat-proxy] get-material 异常:', err && err.stack ? err.stack : err);
+      return sendJSON(res, 500, { success: false, error: (err && err.message) || String(err) });
+    }
+  }
+
   // 转换永久素材 → 群发素材
   if (pathname === '/api/video/convert-to-mass' && req.method === 'POST') {
     const headerKey = req.headers['x-api-key'] || req.headers['X-API-Key'] || req.headers['x-api-key'.toLowerCase()];
