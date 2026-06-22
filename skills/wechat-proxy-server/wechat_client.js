@@ -94,11 +94,19 @@ async function httpsRequest(method, urlStr, { body = null, headers = {} } = {}) 
         const ct = (res.headers['content-type'] || '').toLowerCase();
 
         let data;
+        // 优先按 Content-Type 解析;微信 add_material?type=video 接口偶尔返回
+        // Content-Type: text/plain 但 body 实际是 JSON,做兜底
         if (ct.includes('application/json')) {
           try {
             data = JSON.parse(text);
           } catch {
             data = { raw: text };
+          }
+        } else if (ct.includes('text/plain') || ct === '') {
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { raw: text, contentType: ct };
           }
         } else {
           data = { raw: text, contentType: ct };

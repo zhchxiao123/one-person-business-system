@@ -65,6 +65,73 @@ def load_proxy_env() -> None:
 load_proxy_env()
 
 
+def _ffprobe_codecs(video_path: str) -> tuple[str, str] | None:
+    """返回 (v_codec, a_codec),失败返回 None。需要 ffmpeg/ffprobe 在 PATH。"""
+    import subprocess
+    try:
+        out = subprocess.check_output(
+            [
+                "ffprobe", "-v", "error",
+                "-select_streams", "v:0", "-show_entries", "stream=codec_name", "-of", "default=nw=1:nk=1",
+                video_path,
+            ],
+            stderr=subprocess.STDOUT, timeout=10,
+        ).decode().strip()
+        v = out.splitlines()[0] if out else ""
+        a_out = subprocess.check_output(
+            [
+                "ffprobe", "-v", "error",
+                "-select_streams", "a:0", "-show_entries", "stream=codec_name", "-of", "default=nw=1:nk=1",
+                video_path,
+            ],
+            stderr=subprocess.STDOUT, timeout=10,
+        ).decode().strip()
+        a = a_out.splitlines()[0] if a_out else ""
+        return v, a
+    except Exception:
+        return None
+
+
+def maybe_reencode_for_wechat(video_path: str, mode: str = "auto") -> tuple[str, bool]:
+    """
+    必要时把视频重编码为 H.264 baseline + AAC(微信最稳的格式)。
+    返回 (最终上传路径, 是否重编码了)。
+      - mode="always": 总是重编码
+      - mode="auto":   仅当不是 H.264 + AAC 时重编码
+      - mode="never":  不重编码
+    """
+    if mode == "never":
+        return video_path, False
+    if mode == "always":
+        return _reencode(video_path), True
+    # auto
+    codecs = _ffprobe_codecs(video_path)
+    if codecs is None:
+        # ffprobe 不可用,直接上传
+        return video_path, False
+    v, a = codecs
+    if v == "h264" and a in ("aac", "mp3"):
+        return video_path, False
+    return _reencode(video_path), True
+
+
+def _reencode(video_path: str) -> str:
+    """用 ffmpeg 强制 H.264 baseline + AAC + faststart,返回新文件路径。"""
+    import subprocess
+    import tempfile
+    tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    tmp.close()
+    cmd = [
+        "ffmpeg", "-y", "-i", video_path,
+        "-c:v", "libx264", "-profile:v", "baseline", "-level", "4.0", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "128k",
+        "-movflags", "+faststart",
+        "-f", "mp4", tmp.name,
+    ]
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=600)
+    return tmp.name
+
+
 def upload_video_via_proxy(
     server_url: str,
     api_key: str,
@@ -119,6 +186,8 @@ def main():
     parser.add_argument("--introduction", default="", help="视频简介（写入素材库 description）")
     parser.add_argument("--timeout", type=int, default=600, help="HTTP 超时（秒），大文件请加大")
     parser.add_argument("--json", action="store_true", help="只输出 JSON 结果（适合脚本调用）")
+    parser.add_argument("--reencode", choices=["auto", "always", "never"], default="auto",
+                        help="auto: 仅在视频非 H.264 baseline 时重编码; always: 强制重编码; never: 不重编码")
 
     args = parser.parse_args()
 
@@ -130,10 +199,17 @@ def main():
         sys.exit(1)
 
     try:
+        # 必要时先重编码(微信对 H.264 baseline + AAC + faststart 最友好)
+        upload_path = args.file
+        if args.reencode != "never":
+            upload_path, did_reencode = maybe_reencode_for_wechat(args.file, mode=args.reencode)
+            if did_reencode:
+                print(f"  已自动重编码 → {upload_path}")
+
         result = upload_video_via_proxy(
             server_url=args.server,
             api_key=args.api_key,
-            video_path=args.file,
+            video_path=upload_path,
             title=args.title,
             introduction=args.introduction,
             timeout=args.timeout,
